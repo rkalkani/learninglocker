@@ -1,0 +1,81 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name _;
+    server_tokens off;
+
+    # Max request size
+    client_max_body_size 20M;
+    large_client_header_buffers 4 256k;
+
+    root /app/ui/dist/public;
+
+    add_header X-Frame-Options              "SAMEORIGIN";
+    add_header X-XSS-Protection             "1; mode=block";
+    add_header X-Content-Type-Options       "nosniff";
+
+    # xAPI endpoints
+    location ~* ^/data/xAPI(.*)$ {
+      proxy_pass ${XAPI_SERVER}/data/xAPI$1$is_args$args;
+    }
+
+    # API endpoints
+    location = /api {
+      rewrite /api / break;
+      proxy_redirect off;
+      proxy_pass http://127.0.0.1:${API_PORT};
+    }
+
+    location ~* ^/api(.*)$ {
+      proxy_pass http://127.0.0.1:${API_PORT}$1$is_args$args;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection 'upgrade';
+      proxy_set_header Host $host;
+      proxy_cache_bypass $http_upgrade;
+    }
+
+    # All other traffic directed to statics or Node server
+    location / {
+      try_files $uri @node_server;
+    }
+
+    # Node UI server
+    location @node_server {
+      proxy_pass http://localhost:${UI_PORT};
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection 'upgrade';
+      proxy_set_header Host $host;
+      proxy_cache_bypass $http_upgrade;
+    }
+
+    # Load configuration files for the default server block.
+    error_page 404 /404.html;
+    location = /40x.html {
+      root /usr/share/nginx/html;
+    }
+
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+      root /usr/share/nginx/html;
+    }
+
+    # We don't need .ht files with nginx.
+    location ~ /\.ht {
+      deny all;
+    }
+
+    # Deny access to . files, for security
+    location ~* /\.(?!well-known\/) {
+      log_not_found off;
+      deny all;
+    }
+
+    location ~* (?:#.*#|\.(?:bak|conf|dist|fla|in[ci]|log|orig|psd|sh|sql|sw[op])|~)$ {
+      deny all;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+}
