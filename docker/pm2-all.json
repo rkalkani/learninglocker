@@ -12,7 +12,7 @@
       "wait_ready": true,
       "listen_timeout": 30000,
       "node_args": "--max-old-space-size=256 --max-semi-space-size=2",
-      "autorestart" : false
+      "autorestart": true
     },
     {
       "name": "UIServer",
@@ -26,7 +26,7 @@
       "wait_ready": true,
       "listen_timeout": 30000,
       "node_args": "--max-old-space-size=256 --max-semi-space-size=2",
-      "autorestart" : false
+      "autorestart": true
     },
     {
       "name": "Worker",
@@ -40,7 +40,7 @@
       "wait_ready": true,
       "listen_timeout": 30000,
       "node_args": "--max-old-space-size=256 --max-semi-space-size=2",
-      "autorestart" : false
+      "autorestart": true
     },
     {
       "name": "Scheduler",
@@ -54,7 +54,7 @@
       "detached": true,
       "listen_timeout": 30000,
       "node_args": "--max-old-space-size=256 --max-semi-space-size=2",
-      "autorestart" : false
+      "autorestart": true
     }
   ]
 }
